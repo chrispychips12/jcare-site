@@ -151,8 +151,8 @@ def test_nav_shows_on_phones_and_at_200_percent_zoom(css):
 
 def test_short_narrow_viewports_keep_the_hero_actions_on_screen(css):
     # Adapt 2: measured at 640x400 (200% zoom of 1280x800), the actions end on the first screen
-    short = _block_after(css, "@media (max-height: 36rem) {\n  .hero { padding-top")
-    assert "padding-top: 7.75rem" in short
+    short = _block_after(css, "@media (max-height: 36rem)")
+    assert short.index("padding-top: 7.75rem") > short.index("padding-block: 5rem 5rem"), "after the shorthand"
 
 
 def test_open_tiles_sit_in_a_row_on_narrow_phones(css):
@@ -315,3 +315,58 @@ def test_repeated_carousel_announcement_is_re_announced(root):
     announce = js[js.index("const announce = () => {"): js.index("const go = ")]
     assert 'status.textContent = ""' in announce
     assert "requestAnimationFrame" in announce or "setTimeout" in announce
+
+
+# Final fix wave -------------------------------------------------------------------------------
+
+
+def test_readme_before_launch_order_and_full_test_command(root):
+    readme = (root / "README.md").read_text()
+    assert "--with pytest --with beautifulsoup4 --with fonttools --with brotli pytest -q" in readme
+    launch = readme[readme.index("## Before launch"):]
+    steps = [launch.index(k) for k in ["consent", "form service", "GitHub Pages"]]
+    assert steps == sorted(steps), "consent, then the form, and only then Pages and DNS"
+    assert "public does not enable" in launch.lower()
+
+
+def test_steps_note_is_not_styled_as_a_panel(css):
+    # The funding panel rule used to be `.note-disclosure p`, which also boxed the preview note
+    for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", css, flags=re.S)):
+        if "background: var(--panel)" in body and ".note-disclosure" in selector:
+            assert ":not(.steps-note)" in selector, selector.strip()
+    assert "\n.note-disclosure > p:not(.steps-note) {" in css
+
+
+def test_contact_lead_promises_nothing_until_the_form_is_live(page):
+    assert page.select_one("#contact .contact-intro p.lead").get_text(strip=True) == "Tell us a little about you."
+    assert "in touch" not in page.select_one("#contact .contact-intro p.lead").get_text()
+
+
+def test_abn_never_breaks_across_lines(root, page):
+    html = (root / "index.html").read_text()
+    assert "ABN 88&nbsp;627&nbsp;060&nbsp;851" in html
+    assert "ABN 88 627" not in html
+    assert '"taxID": "88 627 060 851"' in html, "JSON-LD keeps plain spaces"
+
+
+def test_one_short_viewport_block(css):
+    assert css.count("@media (max-height: 36rem)") == 1
+
+
+def test_soffit_motion_after_load_is_four_seconds_in_total(root):
+    soffit = (root / "assets" / "soffit.js").read_text()
+    ms = {n: int(re.search(rf"const {n} = (\d+);", soffit)[1]) for n in ["SETTLE_MS", "RAMP_MS"]}
+    assert ms["SETTLE_MS"] + ms["RAMP_MS"] <= 4000, ms
+
+
+def test_soffit_keyboard_wake_ignores_navigation_keys(root):
+    soffit = (root / "assets" / "soffit.js").read_text()
+    assert 'addEventListener("keydown", onKey)' in soffit
+    assert 'addEventListener("keydown", wake)' not in soffit
+    for key in ["Tab", "Shift", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Control", "Alt", "Meta"]:
+        assert f'"{key}"' in soffit, key
+
+
+def test_soffit_asks_for_the_low_power_gpu(root):
+    soffit = (root / "assets" / "soffit.js").read_text()
+    assert 'powerPreference: "low-power"' in soffit and "high-performance" not in soffit

@@ -287,9 +287,7 @@ a { color: var(--link); text-underline-offset: 0.15em; }
   .bookend-window .ring { display: none; }
   .hero .eyebrow { margin-bottom: 0.75rem; }
   .hero h1 { font-size: clamp(2.25rem, 6vw, 4rem); margin-bottom: 0.3em; }
-}
-/* Short viewports (200% zoom on a laptop): clear the two-row header, keep the actions on screen */
-@media (max-height: 36rem) {
+  /* Clear the two-row header, keep the actions on screen (after the shorthand above) */
   .hero { padding-top: 7.75rem; padding-bottom: 3rem; }
 }
 
@@ -369,7 +367,7 @@ details[open] > summary .mark { transform: rotate(180deg); }
 .note-disclosure > summary { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 48px; color: var(--link); font-weight: 700; }
 .note-disclosure > summary:hover span:first-child { text-decoration: underline; text-underline-offset: 0.15em; }
 .note-disclosure .mark { width: 1.6rem; height: 1.6rem; }
-.note-disclosure p { margin: 0.25rem 0 0; padding: 1.1rem 1.25rem; max-width: 52ch; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.note-disclosure > p:not(.steps-note) { margin: 0.25rem 0 0; padding: 1.1rem 1.25rem; max-width: 52ch; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
 
 /* Carousels (shared by the promises and the testimonials). The track bleeds to the screen edge
    but its first card lines up with the copy above. Without JS it is still a plain scroller. */

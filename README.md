@@ -3,8 +3,15 @@
 Static landing page for JCare Quality Services. Served by GitHub Pages from `main`.
 
 - Preview: `python3 -m http.server 8000`, then open http://localhost:8000
-- Tests: `uv run --no-project --with pytest --with beautifulsoup4 pytest -q`
-- Before launch: the owner confirms written consent for each testimonial; then remove `data-consent="pending"` and the `xfail` in `tests/test_launch_gate.py`
+- Tests: `uv run --no-project --with pytest --with beautifulsoup4 --with fonttools --with brotli pytest -q`
+
+## Before launch
+
+In this order. Each of the first two has a strict `xfail` in `tests/test_launch_gate.py` that turns the suite red if it is half done.
+
+1. The owner confirms written consent for each testimonial; then remove `data-consent="pending"` and the `xfail` on `test_testimonial_consent_confirmed`. If someone declines, delete their quote.
+2. Connect the form service (with the owner's approval): give the form its `action`, remove both preview notes (`.preview-note` and `.steps-note`) and the preview success copy, then remove the `xfail` on `test_form_is_connected`.
+3. Only then enable GitHub Pages and point the domain's DNS at it. Making the repository public does not enable Pages; that is a separate setting.
 
 ## Fonts
 

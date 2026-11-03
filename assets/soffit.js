@@ -2,13 +2,14 @@
 // Plain WebGL2, one fullscreen triangle per canvas, no libraries, nothing fetched. Recoloured for
 // JCare through CONFIG only; the shader below is the shipped source, untouched.
 // Every canvas[data-soffit] gets its own context and preset (hero, footer).
-// WCAG 2.2.2 by design, no pause button needed: the field animates for at most SETTLE_MS after
-// load, then eases to a stop and stops drawing. Only user input (pointer, touch, wheel, keys)
+// WCAG 2.2.2 by design, no pause button needed: the field animates for SETTLE_MS after load and
+// eases to a stop over RAMP_MS (4s in all), then stops drawing. Only user input (pointer, touch,
+// wheel, typing keys; never Tab, arrows, Escape or a lone modifier, which are navigation)
 // wakes it (not scroll events: anchoring and layout shift scroll without a person), and IDLE_MS after the last input it settles again. Nothing wakes on a timer.
 // Under reduced motion each canvas shows one static frame and never wakes. Off-screen canvases
 // and hidden tabs never draw. If WebGL2 is missing or anything fails, the CSS field stays.
 (() => {
-  const SETTLE_MS = 4000; // auto-motion after load, before easing to rest
+  const SETTLE_MS = 3400; // auto-motion after load, before easing to rest (plus RAMP_MS: 4s)
   const IDLE_MS = 3000; // after the last input, before easing to rest
   const RAMP_MS = 600; // ease the time rate to 0 (ease-out on the rate)
   const WAKE_MS = 250; // ease the time rate back up to 1 on input
@@ -161,7 +162,7 @@ void main() {
     const host = canvas.closest(".bookend") || canvas.parentElement;
     const config = { ...BASE, ...(PRESETS[canvas.getAttribute("data-soffit")] || {}) };
     const gl = canvas.getContext("webgl2", {
-      alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "high-performance",
+      alpha: false, antialias: false, depth: false, stencil: false, powerPreference: "low-power",
     });
     if (!gl) return null;
 
@@ -307,6 +308,12 @@ void main() {
     awakeUntil = Math.max(awakeUntil, performance.now() + IDLE_MS);
     sync();
   };
+  // Keyboard navigation is not a reason to move the field: only other keys wake it.
+  const QUIET_KEYS = new Set(["Tab", "Shift", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Control", "Alt", "Meta", "CapsLock"]);
+  const onKey = (e) => {
+    if (QUIET_KEYS.has(e.key)) return;
+    wake();
+  };
   const onPointer = (e) => {
     if (reduce.matches) return;
     for (const inst of instances) {
@@ -363,7 +370,7 @@ void main() {
     window.addEventListener("pointerdown", onPointer, { passive: true });
     window.addEventListener("touchmove", wake, { passive: true });
     window.addEventListener("wheel", wake, { passive: true });
-    window.addEventListener("keydown", wake);
+    window.addEventListener("keydown", onKey);
     document.addEventListener("visibilitychange", sync);
     const onReduceChange = () => {
       if (reduce.matches) awakeUntil = 0;

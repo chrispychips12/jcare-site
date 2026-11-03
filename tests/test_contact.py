@@ -10,7 +10,7 @@ def test_no_contact_form_or_embeds(page):
 def test_footer(page):
     footer = page.find("footer")
     assert footer.find_parent("main") is None
-    text = footer.get_text(" ", strip=True)
+    text = footer.get_text(" ", strip=True).replace("\xa0", " ")  # the ABN uses non-breaking spaces
     assert "JCare Quality Services Pty Ltd" in text
     assert "88 627 060 851" in text
     assert "Monday to Friday, 9am to 5pm" in text

@@ -114,8 +114,8 @@ def _const_ms(soffit, name):
 
 def test_settles_after_load_and_after_input(soffit):
     # WCAG 2.2.2 by design: auto-motion stops within 5s of load; input wakes it, idle settles it
-    assert _const_ms(soffit, "SETTLE_MS") <= 4000
-    assert _const_ms(soffit, "SETTLE_MS") + _const_ms(soffit, "RAMP_MS") <= 5000
+    # Final fix wave: the whole load allowance, ramp included, is 4s at most
+    assert _const_ms(soffit, "SETTLE_MS") + _const_ms(soffit, "RAMP_MS") <= 4000
     assert 1000 <= _const_ms(soffit, "IDLE_MS") <= 3500
     assert "setInterval" not in soffit and "setTimeout" not in soffit, "nothing wakes on a timer"
 

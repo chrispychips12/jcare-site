@@ -20,3 +20,10 @@ import pytest
 def test_testimonial_consent_confirmed(page):
     assert page.select('[data-consent="pending"]') == [], "quotes still awaiting consent"
     assert page.select("[data-placeholder]") == [], "placeholder content still on the page"
+
+
+@pytest.mark.xfail(strict=True, reason="connect a form service with the owner's approval before launch")
+def test_form_is_connected(page):
+    assert page.select(".preview-note") == [], "preview note still on the form"
+    assert page.select(".steps-note") == [], "preview note still in 'What happens after you send?'"
+    assert page.select_one("form.contact-form").has_attr("action"), "the form has nowhere to send"

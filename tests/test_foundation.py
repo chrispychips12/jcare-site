@@ -18,8 +18,6 @@ TEXT_PAIRS = [
     ("on-field", "field-glow", 4.5),  # careers / footer mesh glow that can sit under copy
     ("ink", "panel-tint", 4.5),  # feature tile in the services grid
     ("ink-2", "panel-tint", 4.5),
-    ("ink", "panel", 4.5),  # promise cards, quote cards and the requirements panel on bands
-    ("ink-2", "panel", 4.5),  # quote attribution
     ("hero-ink", "hero-wash", 4.5),  # hero copy on the scrim colour (alpha composite: test_soffit)
     ("link", "panel-tint", 3.0),  # the plus mark on the feature tile is non-text, 3:1
 ]
@@ -31,6 +29,13 @@ UI_PAIRS = [
     ("focus", "paper", 3.0),
     ("focus", "panel", 3.0),
 ]
+
+
+def test_contrast_pairs_are_not_duplicated():
+    # Within each list. A pair may sit in both: as text (4.5:1) and as a focus ring (3:1).
+    for table in (TEXT_PAIRS, UI_PAIRS):
+        pairs = [(fg, bg) for fg, bg, _ in table]
+        assert len(pairs) == len(set(pairs)), [p for p in pairs if pairs.count(p) > 1]
 
 
 def test_cname_is_apex_domain(root):

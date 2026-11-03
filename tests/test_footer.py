@@ -42,7 +42,7 @@ def test_content_in_order(page):
     assert [(a.get_text(strip=True), a["href"]) for a in nav.find_all("a")] == [
         ("What we do", "#support"), ("How we work", "#how-we-work"), ("Careers", "#careers"), ("Contact us", "#contact"),
     ]
-    text = f.get_text(" ", strip=True)
+    text = f.get_text(" ", strip=True).replace("\xa0", " ")  # the ABN uses non-breaking spaces
     order = [
         text.index(h2.get_text(" ", strip=True)), text.index("Get support"), text.index("What we do"),
         text.index("Monday to Friday, 9am to 5pm"), text.index("jcare.services@yahoo.com"),
