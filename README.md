@@ -7,11 +7,11 @@ Static landing page for JCare Quality Services. Served by GitHub Pages from `mai
 
 ## Before launch
 
-In this order. Each of the first two has a strict `xfail` in `tests/test_launch_gate.py` that turns the suite red if it is half done.
+In this order. Each has a strict `xfail` in `tests/test_launch_gate.py` that turns the suite red if it is half done.
 
 1. The owner confirms written consent for each testimonial; then remove `data-consent="pending"` and the `xfail` on `test_testimonial_consent_confirmed`. If someone declines, delete their quote.
 2. Connect the form service (with the owner's approval): give the form its `action`, remove both preview notes (`.preview-note` and `.steps-note`) and the preview success copy, then remove the `xfail` on `test_form_is_connected`.
-3. Only then enable GitHub Pages and point the domain's DNS at it. Making the repository public does not enable Pages; that is a separate setting.
+3. Only then move the domain. Pages already serves a preview at https://chrispychips12.github.io/jcare-site/ with no custom domain and `noindex`. At cutover: add back a `CNAME` file containing `jcarequalityservices.com.au`, remove the `robots` noindex meta, remove the `xfail` on `test_site_is_on_its_own_domain`, set the custom domain in the Pages settings, point the DNS at GitHub, and enforce HTTPS.
 
 ## Fonts
 

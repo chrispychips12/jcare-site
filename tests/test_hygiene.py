@@ -15,7 +15,7 @@ def test_no_phone_address_or_personal_email_in_any_committed_file(root):
     # tests themselves) with patterns, so no test needs to carry the real data it guards against.
     files = committed_text_files(root)
     names = {f.name for f in files}
-    assert {"index.html", "CNAME", ".gitignore", "conftest.py", "soffit.js"} <= names
+    assert {"index.html", ".gitignore", "conftest.py", "soffit.js"} <= names
     assert not {"logo.png"} & names and not any(f.suffix == ".woff2" for f in files)
     for f in files:
         hits = private_hits(f.read_text(encoding="utf-8", errors="replace"))

@@ -324,9 +324,9 @@ def test_readme_before_launch_order_and_full_test_command(root):
     readme = (root / "README.md").read_text()
     assert "--with pytest --with beautifulsoup4 --with fonttools --with brotli pytest -q" in readme
     launch = readme[readme.index("## Before launch"):]
-    steps = [launch.index(k) for k in ["consent", "form service", "GitHub Pages"]]
-    assert steps == sorted(steps), "consent, then the form, and only then Pages and DNS"
-    assert "public does not enable" in launch.lower()
+    steps = [launch.index(k) for k in ["consent", "form service", "move the domain"]]
+    assert steps == sorted(steps), "consent, then the form, and only then the domain and DNS"
+    assert "chrispychips12.github.io/jcare-site" in launch, "README names the preview address"
 
 
 def test_steps_note_is_not_styled_as_a_panel(css):

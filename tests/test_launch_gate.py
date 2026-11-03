@@ -27,3 +27,13 @@ def test_form_is_connected(page):
     assert page.select(".preview-note") == [], "preview note still on the form"
     assert page.select(".steps-note") == [], "preview note still in 'What happens after you send?'"
     assert page.select_one("form.contact-form").has_attr("action"), "the form has nowhere to send"
+
+
+@pytest.mark.xfail(strict=True, reason="preview on github.io: restore CNAME and drop noindex at the domain cutover")
+def test_site_is_on_its_own_domain(root, page):
+    # While the site previews on github.io, a CNAME file would redirect it to the domain that
+    # still serves the old site, and noindex keeps the preview (whose form doesn't send) out of
+    # search results. At cutover both flip together.
+    assert (root / "CNAME").exists(), "CNAME file is parked"
+    assert (root / "CNAME").read_text() == "jcarequalityservices.com.au\n"
+    assert page.select('meta[name="robots"]') == [], "noindex still on the page"

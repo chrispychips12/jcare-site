@@ -38,10 +38,6 @@ def test_contrast_pairs_are_not_duplicated():
         assert len(pairs) == len(set(pairs)), [p for p in pairs if pairs.count(p) > 1]
 
 
-def test_cname_is_apex_domain(root):
-    assert (root / "CNAME").read_text() == "jcarequalityservices.com.au\n"
-
-
 @pytest.mark.parametrize("theme", ["light", "dark"])
 @pytest.mark.parametrize("fg,bg,minimum", TEXT_PAIRS + UI_PAIRS)
 def test_token_contrast(tokens, theme, fg, bg, minimum):
