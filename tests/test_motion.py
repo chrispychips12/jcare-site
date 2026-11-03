@@ -145,23 +145,51 @@ def _ms(token, root_tokens):
     return float(m[1]) * (1000 if m[2] == "s" else 1) if m else None
 
 
-def test_user_triggered_motion_is_450ms_or_less(css):
-    # Global constraint: user-triggered transitions (and the one-shot animations a user action
-    # starts: the success message, the heading swap) finish within 450ms, delay included.
+def _user_triggered_timings(css):
+    """(label, total ms) for every transition or animation on a user-triggered selector, delay
+    included. Comments are stripped first so their words never count as a selector. V10: the old
+    blanket skip of every `.hero` selector is gone (it would have hidden a slow `.hero .btn`
+    hover); the hero's on-load entrance matches no user-triggered keyword, so it needs no skip."""
     import re
     from conftest import _block_after
 
     root = dict(re.findall(r"(--dur-[\w-]+):\s*([\d.]+m?s)", _block_after(css, ":root")))
-    checked = 0
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    out = []
     for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
-        if not any(k in selector for k in USER_TRIGGERED) or ".hero" in selector:
+        if not any(k in selector for k in USER_TRIGGERED):
             continue
         for prop, value in re.findall(r"(?<![-\w])(transition|animation|transition-duration|animation-duration|transition-delay|animation-delay)\s*:\s*([^;]+)", body):
             if value.strip().startswith("none"):
                 continue
             for part in value.split(","):
                 times = [t for t in (_ms(x, root) for x in re.findall(r"var\(--[\w-]+\)|[\d.]+m?s\b", part)) if t is not None]
-                total = sum(times[:2])
-                assert total <= 450, f"{selector.strip()} {prop}: {part.strip()} = {total:.0f}ms"
-                checked += 1
-    assert checked > 10
+                out.append((f"{selector.strip()} {prop}: {part.strip()}", sum(times[:2])))
+    return out
+
+
+def test_user_triggered_motion_is_450ms_or_less(css):
+    # Global constraint: user-triggered transitions (and the one-shot animations a user action
+    # starts: the success message, the heading swap) finish within 450ms, delay included.
+    timings = _user_triggered_timings(css)
+    assert len(timings) > 10
+    slow = [(label, ms) for label, ms in timings if ms > 450]
+    assert not slow, slow
+
+
+def test_user_triggered_check_now_covers_hero_selectors(css):
+    # V9 deferred minor: the check used to skip any selector containing ".hero".
+    planted = css + "\n.hero .btn:hover { transition: transform 600ms var(--ease-out-expo); }\n"
+    assert any(ms > 450 and ".hero .btn" in label for label, ms in _user_triggered_timings(planted))
+
+
+def test_interpolate_size_only_when_motion_is_allowed(css):
+    # V3-5 deferred minor: the motion guard covered transitions, not interpolate-size, which is
+    # what lets <details> animate its height. It must only exist inside a no-preference block.
+    import re
+
+    spans = _no_preference_spans(css)
+    hits = [m.start() for m in re.finditer(r"interpolate-size\s*:", css)]
+    assert hits
+    for at in hits:
+        assert any(a <= at <= b for a, b in spans), css[at:at + 60]

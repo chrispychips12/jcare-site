@@ -25,6 +25,7 @@
     }]
   }
   </script>
+  <link rel="preload" href="assets/fonts/bricolage-grotesque-600.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <script src="main.js" defer></script>
@@ -35,6 +36,7 @@
   <header class="site-header">
     <div class="wrap">
       <a class="logo" href="./"><img src="assets/logo.png" alt="JCare Quality Services" width="276" height="108"></a>
+      <a class="btn btn-ghost contact-pill" href="#contact">Contact us</a>
       <nav aria-label="Main">
         <ul>
           <li><a href="#support">What we do</a></li>
@@ -42,7 +44,6 @@
           <li><a href="#careers">Careers</a></li>
         </ul>
       </nav>
-      <a class="btn btn-ghost contact-pill" href="#contact">Contact us</a>
     </div>
   </header>
   <main id="main">
@@ -70,47 +71,47 @@
     </section>
     <section id="support" class="section" aria-labelledby="support-title" data-reveal>
       <div class="wrap">
-        <p class="eyebrow rv">What we help with</p>
+        <p class="eyebrow rv">What we do</p>
         <h2 id="support-title" class="rv">Everyday life, your way.</h2>
         <p class="lead area rv">For self managed, plan managed and private clients across Campbelltown, Liverpool, Bankstown and surrounds.</p>
         <details class="note-disclosure rv">
-          <summary><span>Which plans can we take?</span><span class="mark" aria-hidden="true"></span></summary>
+          <summary><span>What funding can we take?</span><span class="mark" aria-hidden="true"></span></summary>
           <p>We work with self managed and plan managed NDIS participants, and privately funded clients. We're not an NDIS registered provider, so we can't take agency managed plans.</p>
         </details>
         <ul class="services" role="list">
           <li class="is-feature rv">
             <details class="tile">
-              <summary><h3>Personal care</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Personal care</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Showering, bathing and toileting support, in and out of home. Post-operative care, dressing, and help moving about.</p>
             </details>
           </li>
           <li class="rv">
             <details class="tile">
-              <summary><h3>Help around the house</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Help around the house</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Cleaning, washing and ironing, groceries, meal preparation, and keeping the garden in order.</p>
             </details>
           </li>
           <li class="rv">
             <details class="tile">
-              <summary><h3>Life skills</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Life skills</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Morning, afternoon and evening routines. Cooking and meal prep, bills and paperwork, medication prompts, and help understanding the NDIS.</p>
             </details>
           </li>
           <li class="rv">
             <details class="tile">
-              <summary><h3>Social interaction and community</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Social interaction and community</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Joining social groups and meeting people. Parks, entertainment and dining out, plus dance, art, yoga and music therapy.</p>
             </details>
           </li>
           <li class="rv">
             <details class="tile">
-              <summary><h3>Therapy support</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Therapy support</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Getting to and from appointments, and planning and booking occupational therapy, hydrotherapy, speech therapy and sports psychology. Then carrying the therapy on at home and in the community.</p>
             </details>
           </li>
           <li class="rv">
             <details class="tile">
-              <summary><h3>Transport and driver services</h3><span class="mark" aria-hidden="true"></span></summary>
+              <summary><span class="tile-name">Transport and driver services</span><span class="mark" aria-hidden="true"></span></summary>
               <p>Driver assisted transport to work, school, therapy or day services. Airport shuttles, social group tours, day trips and van hire.</p>
             </details>
           </li>
@@ -128,26 +129,23 @@
       <div class="carousel rv" role="region" aria-roledescription="carousel" aria-label="Our promises" data-carousel>
         <ul class="carousel-track values" role="list" tabindex="0">
           <li class="value-card is-lime" aria-roledescription="slide" aria-label="1 of 4">
-            <p class="value-name">People depend on us</p>
             <h3>You know who is coming, and when.</h3>
             <p>We don't take on work we can't staff properly, and we don't move the roster once it's out.</p>
           </li>
           <li class="value-card" aria-roledescription="slide" aria-label="2 of 4">
-            <p class="value-name">Follow their lead</p>
             <h3>Your routine, your way.</h3>
             <p>If you have a particular way of doing something, we learn it properly rather than doing it ours.</p>
           </li>
           <li class="value-card" aria-roledescription="slide" aria-label="3 of 4">
-            <p class="value-name">Say it early, take it well</p>
             <h3>You hear it the same day.</h3>
             <p>If something seems different, we tell you that day. When you tell us how you want things done, that's information, not criticism.</p>
           </li>
           <li class="value-card" aria-roledescription="slide" aria-label="4 of 4">
-            <p class="value-name">Do it properly</p>
             <h3>The same standard, watched or not.</h3>
             <p>Notes written the same shift. Checks and certificates kept current.</p>
           </li>
         </ul>
+        <p class="sr-only carousel-status" aria-live="polite"></p>
         <div class="wrap carousel-controls">
           <div class="carousel-dots" aria-hidden="true" hidden><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="carousel-count">1 of 4</span></div>
           <div class="carousel-buttons">
@@ -188,6 +186,7 @@
             </figure>
           </li>
         </ul>
+        <p class="sr-only carousel-status" aria-live="polite"></p>
         <div class="wrap carousel-controls">
           <div class="carousel-dots" aria-hidden="true" hidden><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="carousel-count">1 of 3</span></div>
           <div class="carousel-buttons">
@@ -202,13 +201,13 @@
         <div class="careers-copy">
           <p class="eyebrow rv">For support workers</p>
           <h2 id="careers-title" class="rv">Work with one person, close to home.</h2>
-          <p class="lead rv">Ongoing, casual roles across South West Sydney, paid at SCHADS award rates (MA000100) with higher rates for evenings and weekends.</p>
+          <p class="lead rv">Ongoing, casual roles across South West Sydney, with higher rates for evenings and weekends.</p>
           <!-- RETENTION SLOT: owner-approved commitments only. -->
-          <p class="careers-action rv"><a class="btn btn-accent" data-mode="staff" href="#contact">Apply below</a></p>
+          <p class="careers-action rv"><a class="btn btn-accent" data-mode="staff" href="#contact">Apply now</a></p>
         </div>
         <ul class="facts" role="list">
           <li class="rv">Same client, not a new house every shift</li>
-          <li class="rv">SCHADS award rates</li>
+          <li class="rv">SCHADS award rates (MA000100)</li>
           <li class="rv">Work close to home</li>
         </ul>
         <details class="requirements rv">
@@ -232,9 +231,24 @@
         <div class="contact-intro">
           <h2 id="contact-title" class="rv">Let's talk.</h2>
           <p class="lead rv">Tell us a little about you and we'll be in touch.</p>
+          <details class="note-disclosure next-steps rv">
+            <summary><span>What happens after you send?</span><span class="mark" aria-hidden="true"></span></summary>
+            <ol class="steps next-client">
+              <li>You tell us a little about the support you need.</li>
+              <li>Someone from our team reads it.</li>
+              <li>We talk through what might help.</li>
+            </ol>
+            <ol class="steps next-staff">
+              <li>You tell us a little about you.</li>
+              <li>Someone from our team reads it.</li>
+              <li>We talk through the work we have.</li>
+            </ol>
+            <p class="steps-note">Preview: this form doesn't send yet.</p>
+          </details>
         </div>
         <div class="contact-panel rv">
-          <!-- Preview only: no action, so nothing leaves the page. Connect a form service (owner approval) before launch. -->
+          <!-- Preview only: no action, so nothing leaves the page. Connect a form service (owner approval) before launch.
+               The submit button ships disabled and hidden; main.js enables it. Without JS nothing can be posted. -->
           <form class="contact-form" method="post" novalidate>
             <fieldset class="switch">
               <legend class="sr-only">I'm getting in touch because</legend>
@@ -249,11 +263,14 @@
 
             <div class="field">
               <label for="f-name">Your name <span class="req" aria-hidden="true">Required</span></label>
-              <input type="text" id="f-name" name="name" autocomplete="name" required>
+              <input type="text" id="f-name" name="name" autocomplete="name" required aria-describedby="f-name-error">
+              <p class="field-error" id="f-name-error"></p>
             </div>
             <div class="field">
               <label for="f-contact">Phone or email <span class="req" aria-hidden="true">Required</span></label>
-              <input type="text" id="f-contact" name="contact" required>
+              <p class="field-hint" id="f-contact-hint">Whichever is easier for you.</p>
+              <input type="text" id="f-contact" name="contact" required aria-describedby="f-contact-hint f-contact-error">
+              <p class="field-error" id="f-contact-error"></p>
             </div>
 
             <div class="mode-sets">
@@ -326,11 +343,12 @@
             </div>
 
             <div class="form-actions">
-              <button class="btn btn-accent form-submit" type="submit">Send</button>
+              <button class="btn btn-accent form-submit" type="submit" disabled>Send message</button>
               <p class="preview-note">Preview: this form doesn't send yet.</p>
             </div>
+            <p class="form-nojs">This form needs JavaScript to work. Our email address is <a href="#footer-email">at the bottom of the page</a>.</p>
           </form>
-          <div class="form-done" role="status" tabindex="-1"></div>
+          <div class="form-done" tabindex="-1"></div>
         </div>
       </div>
     </section>
@@ -359,8 +377,8 @@
             <li><a href="#contact">Contact us</a></li>
           </ul>
         </nav>
-        <p>Monday to Friday, 9am to 5pm</p>
-        <p><a href="mailto:jcare.services@yahoo.com">jcare.services@yahoo.com</a></p>
+        <p class="hours">Office hours: Monday to Friday, 9am to 5pm</p>
+        <p id="footer-email"><a href="mailto:jcare.services@yahoo.com">jcare.services@yahoo.com</a></p>
         <p class="legal">JCare Quality Services Pty Ltd · ABN 88 627 060 851</p>
         <p><a class="to-top" href="#main">Back to top</a></p>
       </div>

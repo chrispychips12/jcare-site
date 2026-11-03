@@ -2,7 +2,10 @@
 @font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/bricolage-grotesque-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-hyperlegible-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-hyperlegible-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "IBM Plex Mono"; src: url("assets/fonts/ibm-plex-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+/* The mono face is IBM Plex Mono (SIL OFL 1.1), subset to Basic Latin for the handful of eyebrow
+   labels and renamed "JCare Mono" as the licence requires of a modified version. Anything outside
+   the range falls back to the system mono, glyph by glyph. */
+@font-face { font-family: "JCare Mono"; src: url("assets/fonts/jcare-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013, U+2018-2019, U+201C-201D, U+2026; }
 
 /* Tokens. Contrast for every text pair is asserted in tests/test_foundation.py, and the hero
    scrim composite in tests/test_soffit.py. Hex (tinted, never pure white or black) rather than
@@ -19,7 +22,7 @@
   --paper: #F5F8FE;
   --panel: #FBFDFF;
   --panel-tint: #EBF3FF;
-  --line: #D5DFF2;
+  --line: #C6D2E5;
   --link: #2B6FD4;
   --accent: #8CC63F;
   --on-accent: #0B1F4D;
@@ -36,7 +39,9 @@
 
   --font-head: "Bricolage Grotesque", system-ui, sans-serif;
   --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "JCare Mono", ui-monospace, monospace;
+  /* Three radii: fields, panels, feature surfaces; pills and circles are 999px / 50% */
+  --radius-sm: 12px;
   --radius: 16px;
   --radius-lg: 20px;
   --space-section: clamp(4rem, 10vw, 7rem);
@@ -100,7 +105,7 @@ a { color: var(--link); text-underline-offset: 0.15em; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip { position: absolute; left: var(--gutter); top: -100px; z-index: 10; background: var(--accent); color: var(--on-accent); padding: 0.75rem 1.1rem; border-radius: 999px; font-weight: 700; text-decoration: none; }
 .skip:focus { top: 1rem; }
-/* Small mono label, no chip: Plex Mono used sparingly, set large enough to read */
+/* Small mono label, no chip: the mono face used sparingly, set large enough to read */
 .eyebrow { display: block; font-family: var(--font-mono); font-size: 0.9375rem; letter-spacing: 0.04em; margin: 0 0 1rem; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 48px; padding: 0.75rem 1.4rem;
@@ -136,14 +141,26 @@ a { color: var(--link); text-underline-offset: 0.15em; }
 
 /* Header: sits over the hero, on the scrim, so it reads in the hero's ink */
 .site-header { position: absolute; inset: 0 0 auto; z-index: 5; color: var(--hero-ink); }
-.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; padding-block: 0.9rem; }
+.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; padding-block: 0.6rem 0.25rem; }
 .logo { display: inline-flex; background: var(--on-field); border-radius: 999px; padding: 0.3rem 0.8rem; }
 .logo img { height: 36px; width: auto; }
 .site-header ul { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; list-style: none; margin: 0; padding: 0; }
 .site-header nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hero-ink); text-decoration: none; font-weight: 700; }
 .site-header nav a:hover { text-decoration: underline; }
 .contact-pill { min-height: 44px; padding-block: 0.5rem; }
-@media (max-width: 47.99rem) { .site-header nav { display: none; } }
+/* Two rows at every width: the logo and the contact pill, then the three links. The DOM is in
+   that order too (logo, pill, nav), so what you see is the tab order; no `order` anywhere. No
+   menu button, no overlay: three links fit at 320px. Wide screens right-align the links under
+   the pill. */
+.site-header .wrap { row-gap: 0.375rem; }
+.site-header nav { flex-basis: 100%; }
+@media (min-width: 48rem) {
+  .site-header ul { justify-content: flex-end; }
+}
+@media (max-width: 47.99rem) {
+  .site-header ul { gap: 0 1.25rem; }
+  .site-header nav a { font-size: 0.9375rem; }
+}
 
 /* Bookends (Atelier, adapted): the hero and the footer share one format. The live Soffit gradient
    is the ground, a scrim has a circular window cut out of it (the logo's ring of hands, made
@@ -200,7 +217,7 @@ a { color: var(--link); text-underline-offset: 0.15em; }
 /* Hero: copy top left, actions bottom-aligned with the circle on the right */
 .hero {
   display: flex; align-items: center;
-  min-height: 92vh; min-height: 92svh; padding-block: clamp(6.5rem, 16vh, 9rem) clamp(5.5rem, 12vw, 8rem);
+  min-height: 92vh; min-height: 92svh; padding-block: clamp(8.75rem, 19vh, 10.5rem) clamp(5.5rem, 12vw, 8rem);
 }
 .hero-layout {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
@@ -249,8 +266,10 @@ a { color: var(--link); text-underline-offset: 0.15em; }
 .site-footer a:not(.btn) { display: inline-flex; align-items: center; min-height: 44px; color: var(--hero-ink); font-weight: 700; }
 .footer-meta nav a { text-decoration: none; }
 .footer-meta nav a:hover { text-decoration: underline; }
+/* Even rhythm: the link rows are 44px targets, so the text rows get the same 44px line box */
 .footer-meta p { margin: 0; }
-.footer-meta .legal { margin-top: 0.75rem; font-size: 0.9375rem; }
+.footer-meta .hours, .footer-meta .legal { padding-block: 0.5625rem; line-height: 1.625rem; }
+.footer-meta .legal { font-size: 0.9375rem; }
 @media (min-width: 60rem) {
   .footer-layout {
     grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "window copy" "window meta";
@@ -266,6 +285,12 @@ a { color: var(--link); text-underline-offset: 0.15em; }
   .hero-layout, .footer-layout { row-gap: 0.75rem; }
   .bookend-window { --win: 0px; }
   .bookend-window .ring { display: none; }
+  .hero .eyebrow { margin-bottom: 0.75rem; }
+  .hero h1 { font-size: clamp(2.25rem, 6vw, 4rem); margin-bottom: 0.3em; }
+}
+/* Short viewports (200% zoom on a laptop): clear the two-row header, keep the actions on screen */
+@media (max-height: 36rem) {
+  .hero { padding-top: 7.75rem; padding-bottom: 3rem; }
 }
 
 /* Disclosures: one plus/minus mark shared by every <details> on the page.
@@ -302,7 +327,9 @@ details[open] > summary .mark { transform: rotate(180deg); }
   min-height: 9rem; padding: 1.1rem 1.1rem 1rem 1.2rem; border-radius: var(--radius-lg);
 }
 .tile[open] > summary { min-height: 5rem; }
-.tile h3 { margin: 0; font-size: clamp(1.0625rem, 4.4vw, 1.5rem); overflow-wrap: break-word; }
+/* The service name is a span, not an h3: inside <summary> WebKit folds a heading into the button's
+   name, so the h2 titles the group and each summary carries its service. */
+.tile-name { font-family: var(--font-head); font-weight: 500; letter-spacing: -0.01em; line-height: 1.25; font-size: clamp(1.0625rem, 4.4vw, 1.5rem); overflow-wrap: break-word; min-width: 0; }
 .tile .mark { align-self: flex-end; color: var(--link); }
 .tile[open] .mark { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .tile > summary:focus-visible { outline-offset: -4px; border-radius: var(--radius-lg); }
@@ -312,11 +339,16 @@ details[open] > summary .mark { transform: rotate(180deg); }
   content: ""; position: absolute; right: 0; bottom: 0; width: 16rem; height: 16rem; pointer-events: none;
   background: repeating-radial-gradient(circle at 100% 100%, transparent 0 26px, var(--ring-faint) 26px 27.5px);
 }
-.services > li.is-feature h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
-/* Below 22rem the tiles stack: one row each, name left, mark right */
+.services > li.is-feature .tile-name { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+/* Below 22rem the tiles stack: one row each, name left, mark right. Below 40rem an OPEN tile
+   does the same, so its paragraph sits right under the name instead of below dead space. */
 @media (max-width: 21.99rem) {
-  .tile > summary, .tile[open] > summary { flex-direction: row; align-items: center; min-height: 4.5rem; }
+  .tile > summary { flex-direction: row; align-items: center; min-height: 4.5rem; }
   .tile .mark { align-self: center; }
+}
+@media (max-width: 39.99rem) {
+  .tile[open] > summary { flex-direction: row; align-items: center; min-height: 4.5rem; }
+  .tile[open] .mark { align-self: center; }
 }
 @media (min-width: 22rem) {
   .services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -394,11 +426,10 @@ details[open] > summary .mark { transform: rotate(180deg); }
   display: flex; flex-direction: column; min-height: 22rem;
   padding: clamp(1.75rem, 5vw, 3rem); background: var(--panel); color: var(--ink); border-radius: var(--radius-lg);
 }
-.value-name { margin: 0 0 auto; padding-bottom: 2.5rem; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.01em; color: var(--link); }
-.value-card h3 { margin: 0 0 0.75rem; max-width: 14ch; font-size: clamp(1.875rem, 7vw, 2.75rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
+.value-card h3 { margin: auto 0 0.75rem; padding-top: 2.5rem; max-width: 14ch; font-size: clamp(1.875rem, 7vw, 2.75rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
 .value-card p:last-child { margin: 0; max-width: 40ch; color: var(--ink-2); }
 .value-card.is-lime { background: var(--accent); color: var(--on-accent); }
-.value-card.is-lime .value-name, .value-card.is-lime p:last-child { color: var(--on-accent); }
+.value-card.is-lime p:last-child { color: var(--on-accent); }
 @media (min-width: 60rem) { .value-card { flex-basis: 45%; min-height: 26rem; } }
 .band .carousel-btn { border-color: var(--panel); }
 
@@ -466,7 +497,16 @@ details[open] > summary .mark { transform: rotate(180deg); }
    gets .is-enhanced, the hidden set is also disabled, and the swap is animated (transform and
    opacity only, instant under reduced motion). */
 .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5vw, 3rem) 4rem; align-items: start; }
-.contact-intro .lead { margin-bottom: 0; }
+.contact-intro .lead { margin-bottom: 0.75rem; }
+/* What happens after you send: a real sequence, so it is numbered. The list follows the switch
+   (data-mode from JS, :has() without it); with neither, the support list shows. */
+.steps { margin: 0.5rem 0 0; padding: 1rem 1.25rem 1rem 2.75rem; max-width: 30rem; background: var(--panel-tint); border-radius: var(--radius); }
+.steps li { padding-block: 0.2rem; }
+.steps li::marker { font-weight: 700; }
+.steps-note { margin: 0.75rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
+.next-staff { display: none; }
+.contact-layout:has(#mode-staff:checked) .next-staff, #contact[data-mode="staff"] .next-staff { display: block; }
+.contact-layout:has(#mode-staff:checked) .next-client, #contact[data-mode="staff"] .next-client { display: none; }
 .contact-panel { min-width: 0; max-width: 36rem; }
 @media (min-width: 60rem) {
   .contact-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
@@ -498,15 +538,20 @@ details[open] > summary .mark { transform: rotate(180deg); }
 .field { display: grid; gap: 0.5rem; margin-bottom: 1.5rem; }
 .field label { font-weight: 700; line-height: 1.3; }
 .req { margin-left: 0.4rem; font-size: 0.875rem; font-weight: 400; color: var(--ink-2); }
+.field-hint { margin: -0.25rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
+/* Errors in the page's voice: text plus a heavier border, never colour alone */
+.field-error { margin: 0; font-weight: 700; color: var(--ink); }
+.field-error:empty { display: none; }
+.contact-form [aria-invalid="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
 .contact-form :is(input:not([type="radio"]), select, textarea) {
   width: 100%; min-height: 52px; margin: 0; padding: 0.75rem 1rem;
   font: inherit; color: var(--ink); background: var(--paper);
-  border: 1.5px solid var(--ink-2); border-radius: 12px;
+  border: 1.5px solid var(--ink-2); border-radius: var(--radius-sm);
   transition: border-color var(--dur-state) var(--ease-out-expo);
 }
 .contact-form textarea { min-height: 8.5rem; resize: vertical; }
 .contact-form :is(input:not([type="radio"]), select, textarea):hover { border-color: var(--ink); }
-.contact-form :is(input:not([type="radio"]), select, textarea):focus-visible { border-color: var(--ink); outline-offset: 2px; border-radius: 12px; }
+.contact-form :is(input:not([type="radio"]), select, textarea):focus-visible { border-color: var(--ink); outline-offset: 2px; border-radius: var(--radius-sm); }
 .select { position: relative; }
 .select select { appearance: none; padding-right: 3rem; cursor: pointer; }
 .select::after {
@@ -523,13 +568,18 @@ details[open] > summary .mark { transform: rotate(180deg); }
 .mode-set.is-entering { opacity: 0; transform: translateY(6px); transition: none; }
 
 .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 0.5rem; }
+/* Without JS there is nothing to send to (a static host answers a POST with an error page), so the
+   submit button stays hidden and disabled and a note points to the email address instead. */
+.contact-form:not(.is-enhanced) .form-actions { display: none; }
+.form-nojs { margin: 0.5rem 0 0; padding: 1rem 1.25rem; background: var(--panel-tint); color: var(--ink); border-radius: var(--radius); }
+.contact-form.is-enhanced .form-nojs { display: none; }
 .form-submit { min-width: 10rem; border: 0; font: inherit; font-weight: 700; cursor: pointer; }
 .preview-note { margin: 0; font-size: 0.9375rem; color: var(--ink-2); }
 
 /* Preview result: replaces the form until "Start again" */
 .form-done:empty { display: none; }
 .form-done { position: relative; overflow: hidden; padding: clamp(1.5rem, 5vw, 2.5rem); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); }
-.form-done p { position: relative; margin: 0 0 1.5rem; font-family: var(--font-head); font-size: clamp(1.375rem, 4.5vw, 1.75rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.25; }
+.form-done p { position: relative; margin: 0 0 1.5rem; overflow-wrap: anywhere; font-family: var(--font-head); font-size: clamp(1.375rem, 4.5vw, 1.75rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.25; }
 .form-done .btn { position: relative; background: none; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; }
 .form-done:focus-visible { outline-offset: 4px; border-radius: var(--radius-lg); }
 .form-done::before { content: ""; position: absolute; right: -3rem; top: -3rem; width: 11rem; height: 11rem; border-radius: 50%; border: 1.5px solid var(--link); opacity: 0; pointer-events: none; }
@@ -602,4 +652,10 @@ details[open] > summary .mark { transform: rotate(180deg); }
   .site-footer a:not(.btn) { color: #000; }
   .hero { min-height: 0; padding-block: 2rem; }
   .bookend .btn-ghost { border-color: currentColor; }
+  /* Disclosures print open (main.js opens them on beforeprint; this covers browsers that style
+     ::details-content), and the carousels print as plain stacked lists */
+  details::details-content { content-visibility: visible; block-size: auto; }
+  .carousel-track { display: block; overflow: visible; padding: 0 var(--gutter); }
+  .carousel-track > li { margin-bottom: 1rem; break-inside: avoid; }
+  .carousel-controls, .form-nojs { display: none; }
 }

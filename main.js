@@ -57,7 +57,9 @@ document.querySelectorAll(".bookend").forEach((el) => {
 // The buttons must work for everyone, so reduced motion only changes the scroll behaviour, it
 // never switches the controls off. Without JS each track is a plain horizontal scroller with
 // its controls hidden. Slide position is in the markup (aria-roledescription="slide",
-// aria-label "n of N"), so nothing here needs to announce it.
+// aria-label "n of N"). A button press also says where it landed ("2 of 4") through the
+// carousel's polite status line, once the scroll settles; swiping and scrolling never do, so
+// the region does not chatter.
 function initCarousel(root) {
   const list = root.querySelector(".carousel-track");
   const prev = root.querySelector(".carousel-prev");
@@ -67,6 +69,7 @@ function initCarousel(root) {
   const dotsWrap = root.querySelector(".carousel-dots");
   const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll(".dot")) : [];
   const count = root.querySelector(".carousel-count");
+  const status = root.querySelector(".carousel-status");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const behavior = () => (reduce.matches ? "auto" : "smooth");
@@ -92,10 +95,28 @@ function initCarousel(root) {
     next.hidden = fits;
   };
 
+  let announceTimer = 0;
+  const announce = () => {
+    clearTimeout(announceTimer);
+    announceTimer = 0;
+    if (!status) return;
+    // Clear, then write on the next frame, so the same message twice ("4 of 4" at the end) is
+    // still a change the screen reader hears.
+    status.textContent = "";
+    const message = `${currentIndex() + 1} of ${cards.length}`;
+    requestAnimationFrame(() => { status.textContent = message; });
+  };
+
   const go = (direction) => {
     if (direction < 0 ? atStart() : atEnd()) return;
     list.scrollBy({ left: direction * step(), behavior: behavior() });
+    // Announce when the scroll ends (scrollend where supported, a timer otherwise).
+    clearTimeout(announceTimer);
+    announceTimer = setTimeout(announce, reduce.matches ? 50 : 600);
   };
+  list.addEventListener("scrollend", () => {
+    if (announceTimer) announce();
+  });
 
   prev.addEventListener("click", () => go(-1));
   next.addEventListener("click", () => go(1));
@@ -133,6 +154,12 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
   const done = section.querySelector(".form-done");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   const LEAVE_MS = 180;
+  // Required fields are checked in the page's own words, not the browser's bubbles. A value of
+  // only spaces counts as empty.
+  const REQUIRED = {
+    name: "Add your name so we know who to reply to.",
+    contact: "Add a phone number or email so we can reply.",
+  };
 
   let token = 0;
   let timer = 0;
@@ -143,7 +170,8 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
     const incoming = sets[mode];
     const outgoing = sets[mode === "staff" ? "client" : "staff"];
     form.dataset.mode = mode;
-    submit.textContent = mode === "staff" ? "Send application" : "Send";
+    section.dataset.mode = mode;
+    submit.textContent = mode === "staff" ? "Send application" : "Send message";
     // The heading follows the switch; focus stays on the switch, so no live region is needed.
     const heading = TITLES[mode] || TITLES.client;
     if (title && title.textContent !== heading) {
@@ -195,6 +223,33 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
     form.hidden = false;
   };
 
+  const setError = (field, message) => {
+    field.setCustomValidity(message);
+    if (message) field.setAttribute("aria-invalid", "true");
+    else field.removeAttribute("aria-invalid");
+    const slot = document.getElementById(`${field.id}-error`);
+    if (slot) slot.textContent = message;
+  };
+
+  // Returns the first field that fails, or null.
+  const validate = () => {
+    let first = null;
+    Object.entries(REQUIRED).forEach(([name, message]) => {
+      const field = form.querySelector(`[name="${name}"]`);
+      const empty = !field.value.trim();
+      setError(field, empty ? message : "");
+      if (empty && !first) first = field;
+    });
+    if (!first && !form.checkValidity()) first = form.querySelector(":invalid:not(fieldset)");
+    return first;
+  };
+
+  // Once a field has been flagged, it clears as soon as it is fixed.
+  form.addEventListener("input", (e) => {
+    const field = e.target;
+    if (field.getAttribute("aria-invalid") === "true" && field.value.trim()) setError(field, "");
+  });
+
   form.addEventListener("change", (e) => {
     if (e.target.name === "mode") show(e.target.value, true);
   });
@@ -212,11 +267,15 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!form.reportValidity()) return;
+    const invalid = validate();
+    if (invalid) {
+      invalid.focus();
+      return;
+    }
     const first = nameField.value.trim().split(/\s+/)[0];
 
     const message = document.createElement("p");
-    message.textContent = `Thanks, ${first}. This is a preview, so nothing has been sent yet.`;
+    message.textContent = `${first ? `Thanks, ${first}.` : "Thanks."} This is a preview, so nothing has been sent yet.`;
     const again = document.createElement("button");
     again.type = "button";
     again.className = "btn btn-ghost";
@@ -224,6 +283,7 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
     again.addEventListener("click", () => {
       const mode = currentMode();
       form.reset();
+      Object.keys(REQUIRED).forEach((name) => setError(form.querySelector(`[name="${name}"]`), ""));
       setMode(mode, false);
       restore();
       nameField.focus();
@@ -234,6 +294,23 @@ document.querySelectorAll("[data-carousel]").forEach(initCarousel);
     done.focus();
   });
 
+  // The submit button ships disabled (and hidden by CSS), so without JS nothing can be posted to
+  // the static host; it only works once this script is running.
+  submit.disabled = false;
   form.classList.add("is-enhanced");
   show(currentMode(), false);
+})();
+
+// Print: families may print this page for an older relative, so every disclosure prints open,
+// then closes again afterwards.
+(() => {
+  let opened = [];
+  window.addEventListener("beforeprint", () => {
+    opened = Array.from(document.querySelectorAll("details:not([open])"));
+    opened.forEach((d) => { d.open = true; });
+  });
+  window.addEventListener("afterprint", () => {
+    opened.forEach((d) => { d.open = false; });
+    opened = [];
+  });
 })();

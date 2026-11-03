@@ -22,6 +22,8 @@ def test_shipped_list_covers_every_asset(root):
 
 def test_weight_budget_excluding_logo(root):
     total = sum((root / p).stat().st_size for p in SHIPPED)
+    # Fonts are weighed as woff2 only: the OFL-*.txt licence files beside them ship in the repo
+    # (the licence requires it) but the page never loads them, so they are not page weight.
     total += sum(f.stat().st_size for f in (root / "assets" / "fonts").glob("*.woff2"))
     assert total < 200_000, f"{total} bytes"
 

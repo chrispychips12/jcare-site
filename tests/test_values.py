@@ -1,11 +1,20 @@
 import re
 
-VALUE_NAMES = ["People depend on us", "Follow their lead", "Say it early, take it well", "Do it properly"]
+PROMISES = [
+    "You know who is coming, and when.",
+    "Your routine, your way.",
+    "You hear it the same day.",
+    "The same standard, watched or not.",
+]
 
 
 def test_four_promises_in_order(page):
-    names = [p.get_text(strip=True) for p in page.select("#how-we-work ul.values > li p.value-name")]
-    assert names == VALUE_NAMES
+    # V10 (findings Distill 4): the kickers ("People depend on us" ...) were the staff values list,
+    # phrased for staff and shown to families; the promise headings already say it. They are gone,
+    # so this now pins the promises themselves.
+    promises = [h.get_text(strip=True) for h in page.select("#how-we-work ul.values > li h3")]
+    assert promises == PROMISES
+    assert page.select_one("#how-we-work .value-name") is None
 
 
 def test_each_card_has_one_statement(page):

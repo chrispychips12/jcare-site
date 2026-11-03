@@ -62,7 +62,8 @@ def test_reduced_motion_block_exists(css):
 def test_fonts_self_hosted(root, css, page):
     for name in [
         "bricolage-grotesque-500", "bricolage-grotesque-600",
-        "atkinson-hyperlegible-400", "atkinson-hyperlegible-700", "ibm-plex-mono-400",
+        # V10 (findings Optimize 2): Plex Mono is subset to Basic Latin and renamed per its OFL
+        "atkinson-hyperlegible-400", "atkinson-hyperlegible-700", "jcare-mono-400",
     ]:
         f = root / "assets" / "fonts" / f"{name}.woff2"
         assert f.exists() and f.stat().st_size > 1000, name

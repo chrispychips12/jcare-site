@@ -33,6 +33,8 @@ def test_careers_has_no_apply_email_button(page):
 def test_apply_goes_to_form_in_staff_mode(page):
     a = page.select_one('#careers a.btn-accent[data-mode="staff"]')
     assert a["href"] == "#contact"
+    # V10 (findings Clarify 3): "Apply below" was vague about where "below" is
+    assert a.get_text(strip=True) == "Apply now"
 
 
 def test_requirements_behind_disclosure(page):
@@ -45,7 +47,10 @@ def test_careers_surface_is_short(page):
     s = page.find("section", id="careers")
     assert s.find("h2").get_text(strip=True) == "Work with one person, close to home."
     facts = [li.get_text(strip=True) for li in s.select("ul.facts > li")]
-    assert facts == ["Same client, not a new house every shift", "SCHADS award rates", "Work close to home"]
+    # V10 (findings Distill 3): the award moved out of the lead into the fact, so it is said once
+    assert facts == ["Same client, not a new house every shift", "SCHADS award rates (MA000100)", "Work close to home"]
+    surface = " ".join(el.get_text(" ", strip=True) for el in s.select(".careers-copy, ul.facts"))
+    assert surface.count("SCHADS") == 1, surface
     assert s.select_one("ul.facts")["role"] == "list"
     assert "Certificate III" in s.select_one("details.requirements").get_text()
 

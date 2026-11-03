@@ -11,7 +11,7 @@ def test_hero_copy_is_short(page):
 
 def test_hero_buttons_are_the_fork(page):
     # V9 controller ruling: "Work with us" opens the careers band (pay and requirements first);
-    # careers "Apply below" then opens the form in staff mode. "Get support" still preselects client.
+    # careers "Apply now" (was "Apply below") then opens the form in staff mode. "Get support" still preselects client.
     hero = page.find("section", class_="hero")
     links = hero.select(".hero-actions a")
     assert [(a.get_text(strip=True), a["href"], a.get("data-mode")) for a in links] == [
@@ -99,5 +99,9 @@ def test_outer_ring_dropped_on_one_column_layouts(css):
     block = _block_after(css, "@media (max-width: 59.99rem) {\n  .bookend-window .ring-2")
     assert re.search(r"\.bookend-window \.ring-2\s*\{[^}]*display:\s*none", "@media{" + block)
     inner = float(re.search(r"\.bookend-window \.ring \{[^}]*inset:\s*-(\d+)px", css)[1])
-    gap_min = 1.75 * 16
+    # V9 deferred minor: the gap used to be hard-coded here (1.75rem). Read it from the one-column
+    # .hero-layout rule instead, so a tighter gap in the CSS turns this red.
+    gap = re.search(r"\n\.hero-layout \{[^}]*?gap:\s*clamp\(([\d.]+)rem", css)
+    assert gap, "one-column .hero-layout gap not found"
+    gap_min = float(gap[1]) * 16
     assert inner < gap_min, "inner ring must clear the copy above the window"

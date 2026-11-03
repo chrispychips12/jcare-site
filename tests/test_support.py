@@ -11,7 +11,9 @@ SERVICES = [
 def test_support_section_lists_six_services_in_order(page):
     section = page.find("section", id="support")
     assert section.find("h2")
-    names = [h.get_text(strip=True) for h in section.select("ul.services > li h3")]
+    # V10 (findings Harden 5, V3-5 deferred minor): the names are spans, not h3s. WebKit folds a
+    # heading inside <summary> into the button's name, so iOS VoiceOver may never expose it.
+    names = [h.get_text(strip=True) for h in section.select("ul.services > li .tile-name")]
     assert names == SERVICES
 
 
@@ -19,7 +21,7 @@ def test_service_detail_is_behind_a_tap(page):
     tiles = page.select("#support ul.services > li > details.tile")
     assert len(tiles) == 6
     for t in tiles:
-        assert t.find("summary").find("h3")
+        assert t.find("summary").find("span", class_="tile-name")
         assert len(t.find("p").get_text(strip=True)) > 30
 
 
@@ -29,7 +31,8 @@ def test_services_list_keeps_semantics(page):
 
 def test_funding_note_is_disclosed(page):
     d = page.select_one("#support details.note-disclosure")
-    assert d.find("summary").get_text(strip=True) == "Which plans can we take?"
+    # V10 (findings Clarify 2): private funding is not a plan
+    assert d.find("summary").get_text(strip=True) == "What funding can we take?"
     text = d.get_text(" ", strip=True).lower()
     for phrase in ["self managed", "plan managed", "privately funded", "agency managed"]:
         assert phrase in text

@@ -40,7 +40,10 @@ def test_form_is_honest_preview(page, root):
     assert not form.has_attr("action")
     assert "doesn't send yet" in page.select_one("p.preview-note").get_text()
     js = (root / "main.js").read_text()
-    assert "preventDefault" in js and "reportValidity" in js and "nothing has been sent" in js
+    # V10 (findings Clarify 5 / Harden 1): native validation bubbles ("Please fill out this field")
+    # gave way to inline messages in the page's voice, so reportValidity became setCustomValidity
+    # plus an inline error slot per required field (tests/test_refine.py).
+    assert "preventDefault" in js and "setCustomValidity" in js and "nothing has been sent" in js
 
 
 def test_mode_links_wired(root):
