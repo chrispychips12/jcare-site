@@ -1,0 +1,605 @@
+@font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/bricolage-grotesque-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/bricolage-grotesque-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-hyperlegible-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-hyperlegible-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url("assets/fonts/ibm-plex-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+/* Tokens. Contrast for every text pair is asserted in tests/test_foundation.py, and the hero
+   scrim composite in tests/test_soffit.py. Hex (tinted, never pure white or black) rather than
+   OKLCH for the tested tokens: iOS 15.0 to 15.3 has no oklch(), and a missing colour token on an
+   old phone would mean invisible text. */
+:root {
+  color-scheme: light dark;
+  --field-deep: #0A3A9E;
+  --field-mid: #2B6FD4;
+  --field-sky: #0593C6;
+  --field-glow: #0A6E96;
+  --ink: #0B1F4D;
+  --ink-2: #3A4C70;
+  --paper: #F5F8FE;
+  --panel: #FBFDFF;
+  --panel-tint: #EBF3FF;
+  --line: #D5DFF2;
+  --link: #2B6FD4;
+  --accent: #8CC63F;
+  --on-accent: #0B1F4D;
+  --on-field: #F9FCFF;
+  --focus: #0B1F4D;
+  --hero-ink: #0B1F4D;
+  --hero-wash: #E2EBFB;
+  --hero-scrim: rgba(226, 235, 251, 0.72);
+  --hero-tint: rgba(10, 58, 158, 0.08);
+  --hero-ring: rgba(43, 111, 212, 0.6);
+  --ring-faint: rgba(43, 111, 212, 0.16);
+  --dot: rgba(249, 252, 255, 0.24);
+  --field-line: rgba(249, 252, 255, 0.4);
+
+  --font-head: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius: 16px;
+  --radius-lg: 20px;
+  --space-section: clamp(4rem, 10vw, 7rem);
+  --space-band: clamp(6rem, 16vw, 11rem);
+  --measure: 34ch;
+  --gutter: clamp(16px, 4vw, 40px);
+  --max: 72rem;
+
+  /* Motion: ease-out curves only, no bounce. User-triggered transitions stay under 450ms. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-press: 120ms;
+  --dur-state: 280ms;
+  --dur-enter: 700ms;
+}
+
+/* Dark mode is designed, not dimmed: midnight paper, electric blue fields that keep their
+   chroma, lime still the warm pop. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --field-deep: #021852;
+    --field-mid: #0056C5;
+    --field-sky: #007BB2;
+    --field-glow: #0A6E96;
+    --ink: #E8EEFA;
+    --ink-2: #A9B6D3;
+    --paper: #060E23;
+    --panel: #0B1A3D;
+    --panel-tint: #13244F;
+    --line: #22386A;
+    --link: #8DB8F2;
+    --focus: #8CC63F;
+    --hero-ink: #F9FCFF;
+    --hero-wash: #061B4A;
+    --hero-scrim: rgba(6, 27, 74, 0.76);
+    --hero-tint: rgba(249, 252, 255, 0.06);
+    --hero-ring: rgba(249, 252, 255, 0.5);
+    --ring-faint: rgba(141, 184, 242, 0.16);
+  }
+}
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.125rem/1.6 var(--font-body); }
+img, svg { max-width: 100%; height: auto; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 0.5em; }
+h1 { font-size: clamp(2.75rem, 7.4vw, 6.5rem); letter-spacing: -0.035em; line-height: 1; }
+h2 { font-size: clamp(2rem, 6vw, 3.5rem); letter-spacing: -0.03em; line-height: 1.05; }
+h1, h2 { text-wrap: balance; }
+h3 { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.25; }
+p { margin: 0 0 1em; max-width: 62ch; text-wrap: pretty; }
+a { color: var(--link); text-underline-offset: 0.15em; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+/* Layout and components */
+.wrap { max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.section { padding-block: var(--space-section); }
+.section.band { padding-block: var(--space-band); }
+.lead { max-width: var(--measure); font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.45; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip { position: absolute; left: var(--gutter); top: -100px; z-index: 10; background: var(--accent); color: var(--on-accent); padding: 0.75rem 1.1rem; border-radius: 999px; font-weight: 700; text-decoration: none; }
+.skip:focus { top: 1rem; }
+/* Small mono label, no chip: Plex Mono used sparingly, set large enough to read */
+.eyebrow { display: block; font-family: var(--font-mono); font-size: 0.9375rem; letter-spacing: 0.04em; margin: 0 0 1rem; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 48px; padding: 0.75rem 1.4rem;
+  border-radius: 999px; font-weight: 700; text-decoration: none;
+  transition: transform var(--dur-state) var(--ease-out-expo), background-color var(--dur-state) var(--ease-out-expo);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.97); transition-duration: var(--dur-press); }
+.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn-ghost { color: inherit; border: 1.5px solid currentColor; }
+
+/* Drenched bands: token-driven mesh (theme-aware, no baked SVG), visible grain on soft-light */
+.band { position: relative; isolation: isolate; overflow: hidden; overflow: clip; background: var(--field-deep); color: var(--on-field); line-height: 1.68; }
+.band .lead { line-height: 1.5; }
+.band::before {
+  content: ""; position: absolute; inset: -10%; z-index: -2;
+  background:
+    radial-gradient(55% 70% at 88% 8%, var(--field-glow) 0, transparent 62%),
+    radial-gradient(70% 50% at 8% 105%, var(--field-mid) 0, transparent 66%),
+    var(--field-deep);
+}
+.band::after { content: ""; position: absolute; inset: 0; z-index: -1; background: url("assets/grain.svg") 0 0 / 160px; opacity: 0.5; mix-blend-mode: soft-light; pointer-events: none; }
+.band a:not(.btn) { color: var(--on-field); }
+.band :focus-visible { outline-color: var(--on-field); }
+@media (prefers-color-scheme: dark) {
+  .band::after { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Header: sits over the hero, on the scrim, so it reads in the hero's ink */
+.site-header { position: absolute; inset: 0 0 auto; z-index: 5; color: var(--hero-ink); }
+.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; padding-block: 0.9rem; }
+.logo { display: inline-flex; background: var(--on-field); border-radius: 999px; padding: 0.3rem 0.8rem; }
+.logo img { height: 36px; width: auto; }
+.site-header ul { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; list-style: none; margin: 0; padding: 0; }
+.site-header nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hero-ink); text-decoration: none; font-weight: 700; }
+.site-header nav a:hover { text-decoration: underline; }
+.contact-pill { min-height: 44px; padding-block: 0.5rem; }
+@media (max-width: 47.99rem) { .site-header nav { display: none; } }
+
+/* Bookends (Atelier, adapted): the hero and the footer share one format. The live Soffit gradient
+   is the ground, a scrim has a circular window cut out of it (the logo's ring of hands, made
+   literal), hairline rings, and a giant faded wordmark cropped by the bottom edge. Back to front:
+   ground (CSS field, then the canvas once WebGL2 is running), the window's scrim, grain and
+   wordmark, then copy. The scrim is the window's own box-shadow, so the hole is always exactly
+   where the window sits in the layout. overflow: clip, not just hidden: the oversized ground would
+   otherwise make the bookend a scroll container that focus can scroll. No backdrop blur: over a
+   live canvas it costs too much on old phones. */
+.bookend {
+  position: relative; isolation: isolate; overflow: hidden; overflow: clip;
+  background: var(--field-deep); color: var(--hero-ink);
+}
+.bookend-ground { position: absolute; inset: -4% 0 -16%; z-index: 0; }
+.bookend-field {
+  position: absolute; inset: 0;
+  background:
+    url("assets/rings.svg") right top / min(60rem, 130vw) auto no-repeat,
+    radial-gradient(45% 60% at 85% 12%, var(--field-sky) 0, transparent 65%),
+    radial-gradient(60% 80% at 8% 100%, var(--field-mid) 0, transparent 70%),
+    radial-gradient(28% 38% at 76% 84%, rgba(140, 198, 63, 0.5) 0, transparent 70%),
+    var(--field-deep);
+}
+.soffit { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: 0; }
+.bookend.is-live .soffit { opacity: 1; }
+.bookend-grain { position: absolute; inset: 0; z-index: 2; background: url("assets/grain.svg") 0 0 / 180px; opacity: 0.16; filter: invert(1); pointer-events: none; }
+@media (prefers-color-scheme: dark) {
+  .bookend-grain { opacity: 0.2; filter: none; }
+}
+.bookend .wrap { width: 100%; }
+.bookend-window {
+  --win: min(66vw, 17rem, 28vh);
+  grid-area: window; justify-self: center; position: relative; z-index: 1;
+  width: var(--win); aspect-ratio: 1 / 1; border-radius: 50%;
+  box-shadow: 0 0 0 200vmax var(--hero-scrim);
+}
+.bookend-window .ring {
+  position: absolute; inset: -14px; border-radius: 50%; border: 1px solid var(--hero-ring);
+  -webkit-mask-image: linear-gradient(to bottom, var(--ink), transparent 85%);
+  mask-image: linear-gradient(to bottom, var(--ink), transparent 85%);
+}
+.bookend-window .ring-2 { inset: -46px; opacity: 0.5; }
+/* One column: the window sits ~28px under the copy, so only the inner ring (14px out) fits */
+@media (max-width: 59.99rem) {
+  .bookend-window .ring-2 { display: none; }
+}
+.bookend .btn-ghost:hover { background: var(--hero-tint); }
+.bookend-wordmark {
+  position: absolute; z-index: 2; left: 50%; bottom: 0; transform: translate(-50%, 30%);
+  font-family: var(--font-head); font-weight: 600; font-size: clamp(7rem, 34vw, 26rem); line-height: 0.8; letter-spacing: -0.06em;
+  color: var(--hero-tint); white-space: nowrap; pointer-events: none; user-select: none;
+}
+
+/* Hero: copy top left, actions bottom-aligned with the circle on the right */
+.hero {
+  display: flex; align-items: center;
+  min-height: 92vh; min-height: 92svh; padding-block: clamp(6.5rem, 16vh, 9rem) clamp(5.5rem, 12vw, 8rem);
+}
+.hero-layout {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "copy" "window" "actions"; gap: clamp(1.75rem, 5vw, 2.5rem);
+}
+.hero-copy { grid-area: copy; position: relative; z-index: 3; max-width: 42rem; }
+.hero .eyebrow { margin-bottom: 1.25rem; }
+.hero h1 { margin-bottom: 0.4em; }
+.hero h1 .line { display: block; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.hero h1 .line > span { display: inline-block; }
+.hero .lead { margin-bottom: 0; }
+.hero-actions, .footer-actions { position: relative; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.hero-actions { grid-area: actions; }
+.hero-actions .btn, .footer-actions .btn { min-width: 9.5rem; }
+@media (min-width: 60rem) {
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "copy window" "actions window";
+    column-gap: clamp(2rem, 5vw, 5rem); row-gap: 2rem; align-items: start;
+  }
+  .bookend-window { --win: min(34vw, 30rem); align-self: center; }
+  .hero-actions { align-self: end; }
+}
+
+/* Footer: the hero, mirrored. Circle left, copy right on wide screens; the page closes where it
+   opened. The site's only email address lives here. */
+.site-footer {
+  min-height: 80vh; min-height: 80svh; display: flex; align-items: center;
+  padding-block: clamp(5rem, 12vw, 9rem) clamp(7rem, 18vw, 12rem); font-size: 1rem;
+}
+.site-footer .bookend-field {
+  background:
+    url("assets/rings.svg") right top / min(60rem, 130vw) auto no-repeat,
+    radial-gradient(45% 60% at 15% 30%, var(--field-sky) 0, transparent 65%),
+    radial-gradient(60% 80% at 92% 100%, var(--field-mid) 0, transparent 70%),
+    radial-gradient(28% 38% at 24% 70%, rgba(140, 198, 63, 0.5) 0, transparent 70%),
+    var(--field-deep);
+}
+.footer-layout {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "copy" "window" "meta"; gap: clamp(1.75rem, 5vw, 2.5rem);
+}
+.footer-copy { grid-area: copy; position: relative; z-index: 3; }
+.footer-copy h2 { max-width: 14ch; margin-bottom: 1.5rem; }
+.footer-meta { grid-area: meta; position: relative; z-index: 3; }
+.footer-meta ul { display: flex; flex-wrap: wrap; gap: 0 1.5rem; list-style: none; margin: 0 0 1rem; padding: 0; }
+.site-footer a:not(.btn) { display: inline-flex; align-items: center; min-height: 44px; color: var(--hero-ink); font-weight: 700; }
+.footer-meta nav a { text-decoration: none; }
+.footer-meta nav a:hover { text-decoration: underline; }
+.footer-meta p { margin: 0; }
+.footer-meta .legal { margin-top: 0.75rem; font-size: 0.9375rem; }
+@media (min-width: 60rem) {
+  .footer-layout {
+    grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "window copy" "window meta";
+    column-gap: clamp(2rem, 6vw, 6rem); row-gap: 2.5rem; align-items: start;
+  }
+  .footer-meta { align-self: end; }
+}
+
+/* Short viewports (landscape phones, 200% zoom): the window closes to nothing so the copy and
+   actions stay on the first screen. The scrim is the window's shadow, so it stays. */
+@media (max-height: 36rem) {
+  .hero, .site-footer { min-height: 0; padding-block: 5rem 5rem; }
+  .hero-layout, .footer-layout { row-gap: 0.75rem; }
+  .bookend-window { --win: 0px; }
+  .bookend-window .ring { display: none; }
+}
+
+/* Disclosures: one plus/minus mark shared by every <details> on the page.
+   Height animates where the browser can interpolate to auto; elsewhere it opens instantly. */
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+.mark { flex: none; position: relative; display: inline-block; width: 2rem; height: 2rem; border-radius: 50%; border: 1.5px solid currentColor; transition: transform var(--dur-state) var(--ease-out-expo); }
+.mark::before, .mark::after { content: ""; position: absolute; left: 50%; top: 50%; width: 0.75rem; height: 2px; margin: -1px 0 0 -0.375rem; border-radius: 2px; background: currentColor; transition: transform var(--dur-state) var(--ease-out-expo); }
+.mark::after { transform: rotate(90deg); }
+details[open] > summary .mark::after { transform: rotate(0deg); }
+details[open] > summary .mark { transform: rotate(180deg); }
+/* Only when motion is allowed: the reduced-motion kill switch (*, *::before, *::after) cannot reach ::details-content */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (interpolate-size: allow-keywords) {
+    details { interpolate-size: allow-keywords; }
+    details::details-content { block-size: 0; overflow: hidden; transition: block-size 0.35s var(--ease-out-quart), content-visibility 0.35s var(--ease-out-quart) allow-discrete; }
+    details[open]::details-content { block-size: auto; }
+  }
+}
+
+/* Support: six soft tiles, the description one tap away. One feature tile breaks the grid. */
+.area { margin-bottom: 0.75rem; }
+.services { list-style: none; margin: clamp(2rem, 5vw, 3rem) 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; align-items: start; }
+.services > li { min-width: 0; }
+.tile {
+  position: relative; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  transition: transform var(--dur-state) var(--ease-out-expo), border-color var(--dur-state) var(--ease-out-expo);
+}
+.tile:hover { border-color: var(--link); transform: translateY(-3px); }
+.tile:active { transform: scale(0.985); transition-duration: var(--dur-press); }
+.tile > summary {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 1.25rem;
+  min-height: 9rem; padding: 1.1rem 1.1rem 1rem 1.2rem; border-radius: var(--radius-lg);
+}
+.tile[open] > summary { min-height: 5rem; }
+.tile h3 { margin: 0; font-size: clamp(1.0625rem, 4.4vw, 1.5rem); overflow-wrap: break-word; }
+.tile .mark { align-self: flex-end; color: var(--link); }
+.tile[open] .mark { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.tile > summary:focus-visible { outline-offset: -4px; border-radius: var(--radius-lg); }
+.tile p { position: relative; z-index: 1; margin: 0; padding: 0 1.2rem 1.4rem; color: var(--ink-2); }
+.services > li.is-feature .tile { background: var(--panel-tint); }
+.services > li.is-feature .tile::after {
+  content: ""; position: absolute; right: 0; bottom: 0; width: 16rem; height: 16rem; pointer-events: none;
+  background: repeating-radial-gradient(circle at 100% 100%, transparent 0 26px, var(--ring-faint) 26px 27.5px);
+}
+.services > li.is-feature h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+/* Below 22rem the tiles stack: one row each, name left, mark right */
+@media (max-width: 21.99rem) {
+  .tile > summary, .tile[open] > summary { flex-direction: row; align-items: center; min-height: 4.5rem; }
+  .tile .mark { align-self: center; }
+}
+@media (min-width: 22rem) {
+  .services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .services > li.is-feature { grid-column: 1 / -1; }
+}
+@media (min-width: 22rem) and (max-width: 59.99rem) { .services > li:last-child { grid-column: 1 / -1; } }
+/* On narrow phones an open tile takes the whole row, so its paragraph has room to breathe */
+@media (min-width: 22rem) and (max-width: 39.99rem) { .services > li:has(> .tile[open]) { grid-column: 1 / -1; } }
+@media (min-width: 60rem) {
+  .services { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .services > li.is-feature { grid-column: span 2; grid-row: span 2; }
+  .tile > summary { min-height: 11rem; padding: 1.75rem 1.75rem 1.5rem; }
+  .services > li.is-feature .tile > summary { min-height: 23rem; }
+  .tile p { padding: 0 1.75rem 1.75rem; }
+}
+
+/* Funding: the plan detail behind a tap, right under the area line */
+.note-disclosure > summary { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 48px; color: var(--link); font-weight: 700; }
+.note-disclosure > summary:hover span:first-child { text-decoration: underline; text-underline-offset: 0.15em; }
+.note-disclosure .mark { width: 1.6rem; height: 1.6rem; }
+.note-disclosure p { margin: 0.25rem 0 0; padding: 1.1rem 1.25rem; max-width: 52ch; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+
+/* Carousels (shared by the promises and the testimonials). The track bleeds to the screen edge
+   but its first card lines up with the copy above. Without JS it is still a plain scroller. */
+.section-alt { background: var(--panel); border-block: 1px solid var(--line); }
+.carousel { margin-top: clamp(2rem, 5vw, 3.5rem); --inset: max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))); }
+.carousel-track {
+  list-style: none; margin: 0; padding: 0.5rem var(--inset) 1rem;
+  display: flex; gap: 0.875rem;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scroll-padding-inline: var(--inset);
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-track:focus-visible { outline-offset: -3px; border-radius: var(--radius-lg); }
+.carousel-track > li { scroll-snap-align: start; }
+
+.carousel-controls { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.75rem; }
+.carousel [hidden] { display: none; }
+.carousel-dots { display: flex; align-items: center; gap: 0.5rem; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: currentColor; opacity: 0.4; transition: opacity var(--dur-state) var(--ease-out-expo), background-color var(--dur-state) var(--ease-out-expo); }
+.dot.is-current { width: 1.5rem; background: var(--accent); color: var(--on-accent); opacity: 1; }
+/* On a band the lime card is already that screen's one pop, so the current dot is a light pill */
+.band .dot.is-current { background: var(--on-field); }
+.carousel-count { margin-left: 0.5rem; font-size: 0.9375rem; font-weight: 700; }
+.carousel-buttons { display: flex; gap: 0.75rem; margin-left: auto; }
+.carousel-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0;
+  border: 1.5px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--ink); cursor: pointer;
+  transition: transform var(--dur-state) var(--ease-out-expo), border-color var(--dur-state) var(--ease-out-expo), opacity var(--dur-state) var(--ease-out-expo);
+}
+.carousel-btn:hover { border-color: var(--link); }
+.carousel-btn:active { transform: scale(0.94); transition-duration: var(--dur-press); }
+.carousel-btn[aria-disabled="true"] { opacity: 0.4; cursor: default; }
+.carousel-btn[aria-disabled="true"]:hover { border-color: var(--line); }
+.carousel-btn[aria-disabled="true"]:active { transform: none; }
+
+/* How we work: the second drenched band. The copy sits on deep blue and the text-safe glow; the
+   mid blue and the dotted particle field rise from the bottom, behind the cards, so neither ever
+   sits under band copy (tests/test_foundation.py). Light cards and ONE lime card. */
+.band-values::before {
+  background:
+    radial-gradient(70% 50% at 80% 100%, var(--field-mid) 0, transparent 70%),
+    radial-gradient(55% 60% at 100% 0%, var(--field-glow) 0, transparent 70%),
+    var(--field-deep);
+}
+.band-dots {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, var(--dot) 1px, transparent 1.6px) 0 0 / 22px 22px;
+  -webkit-mask-image: radial-gradient(80% 55% at 70% 100%, var(--ink), transparent);
+  mask-image: radial-gradient(80% 55% at 70% 100%, var(--ink), transparent);
+}
+.value-card {
+  flex: 0 0 85%;
+  display: flex; flex-direction: column; min-height: 22rem;
+  padding: clamp(1.75rem, 5vw, 3rem); background: var(--panel); color: var(--ink); border-radius: var(--radius-lg);
+}
+.value-name { margin: 0 0 auto; padding-bottom: 2.5rem; font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.01em; color: var(--link); }
+.value-card h3 { margin: 0 0 0.75rem; max-width: 14ch; font-size: clamp(1.875rem, 7vw, 2.75rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
+.value-card p:last-child { margin: 0; max-width: 40ch; color: var(--ink-2); }
+.value-card.is-lime { background: var(--accent); color: var(--on-accent); }
+.value-card.is-lime .value-name, .value-card.is-lime p:last-child { color: var(--on-accent); }
+@media (min-width: 60rem) { .value-card { flex-basis: 45%; min-height: 26rem; } }
+.band .carousel-btn { border-color: var(--panel); }
+
+/* Testimonials: light ground, one large quote per card, an abstract portrait tile (never a face),
+   and a role caption until each person's consent is confirmed. */
+.quote-card {
+  flex: 0 0 88%;
+  padding: clamp(1.5rem, 4vw, 2.75rem); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg);
+}
+.quote-card figure { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.25rem clamp(1.25rem, 3vw, 2rem); align-items: start; }
+.portrait { grid-row: span 2; width: 4.5rem; height: 4.5rem; border-radius: 22px; }
+.quote-card blockquote { margin: 0; }
+.quote-card blockquote p { margin: 0; max-width: 28ch; font-family: var(--font-head); font-weight: 500; font-size: clamp(1.375rem, 3.2vw, 2rem); letter-spacing: -0.015em; line-height: 1.25; color: var(--ink); }
+.quote-card figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; color: var(--ink-2); font-size: 1rem; }
+.section-quotes .carousel-dots { color: var(--ink-2); }
+@media (max-width: 24rem) {
+  .quote-card figure { grid-template-columns: minmax(0, 1fr); }
+  .portrait { grid-row: auto; }
+}
+@media (min-width: 40rem) { .portrait { width: 6rem; height: 6rem; border-radius: 28px; } }
+@media (min-width: 60rem) { .quote-card { flex-basis: 62%; } }
+
+/* Careers: the third drench, the text-safe glow top left, mid below the requirements panel.
+   Three facts set large on the blue; the requirements sit in a light panel behind a tap. */
+.band-careers::before {
+  background:
+    radial-gradient(60% 75% at 6% 0%, var(--field-glow) 0, transparent 66%),
+    radial-gradient(70% 40% at 50% 115%, var(--field-mid) 0, transparent 68%),
+    var(--field-deep);
+}
+.careers-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5vw, 3rem) 4rem; align-items: end; }
+.careers-copy h2 { max-width: 16ch; }
+.careers-copy .lead { margin-bottom: 0; }
+.careers-action { margin: 1.75rem 0 0; }
+.facts { list-style: none; margin: 0; padding: 0; }
+.facts li {
+  position: relative; padding-block: 1rem;
+  font-family: var(--font-head); font-weight: 500; font-size: clamp(1.5rem, 5.5vw, 2.25rem); letter-spacing: -0.02em; line-height: 1.15;
+}
+.facts li::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--field-line); transform-origin: left; }
+.requirements { max-width: 48rem; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-lg); line-height: 1.6; }
+.requirements :focus-visible { outline-color: var(--focus); }
+.requirements > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  min-height: 56px; padding: 1rem 1.25rem 1rem 1.5rem; border-radius: var(--radius-lg);
+  font-family: var(--font-head); font-weight: 500; font-size: 1.1875rem; letter-spacing: -0.01em;
+}
+.requirements > summary:focus-visible { outline-offset: -5px; }
+.requirements .mark { color: var(--link); }
+.requirements-body { padding: 0 1.5rem 1.5rem; }
+.requirements-body > p { margin: 1.25rem 0 0; color: var(--ink-2); }
+.checklist { list-style: none; margin: 0; padding: 0; }
+.checklist li { position: relative; padding: 0.75rem 0 0.75rem 2rem; border-top: 1px solid var(--line); }
+.checklist li::before { content: ""; position: absolute; left: 0.15rem; top: 1.05rem; width: 0.45rem; height: 0.8rem; border: solid var(--link); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+@media (prefers-color-scheme: dark) {
+  .requirements { border-color: var(--ink-2); }
+}
+@media (min-width: 60rem) {
+  .careers-layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .requirements { grid-column: 1 / -1; }
+}
+
+/* Contact: one calm form. The switch is a real radio group; the pill under it is decoration.
+   Without JS, :has() shows the question set that matches the checked radio. With JS the form
+   gets .is-enhanced, the hidden set is also disabled, and the swap is animated (transform and
+   opacity only, instant under reduced motion). */
+.contact-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5vw, 3rem) 4rem; align-items: start; }
+.contact-intro .lead { margin-bottom: 0; }
+.contact-panel { min-width: 0; max-width: 36rem; }
+@media (min-width: 60rem) {
+  .contact-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+}
+
+.contact-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+
+/* Segmented switch */
+.contact-form .switch { margin-bottom: 2.25rem; }
+.switch-track { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; }
+.switch input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.switch label {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0.5rem 0.9rem; border-radius: 999px; text-align: center; line-height: 1.2;
+  font-weight: 700; color: var(--ink-2); cursor: pointer; transition: color 0.3s var(--ease-out-expo);
+}
+.switch label:hover { color: var(--ink); }
+.switch input:checked + label { color: var(--paper); }
+.switch input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+.switch-pill {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+  border-radius: 999px; background: var(--ink);
+  transition: transform 0.4s var(--ease-out-expo);
+}
+.switch:has(input[value="staff"]:checked) .switch-pill,
+.contact-form[data-mode="staff"] .switch-pill { transform: translateX(100%); }
+
+/* Fields: visible labels, large targets, a calm border that still meets 3:1 */
+.field { display: grid; gap: 0.5rem; margin-bottom: 1.5rem; }
+.field label { font-weight: 700; line-height: 1.3; }
+.req { margin-left: 0.4rem; font-size: 0.875rem; font-weight: 400; color: var(--ink-2); }
+.contact-form :is(input:not([type="radio"]), select, textarea) {
+  width: 100%; min-height: 52px; margin: 0; padding: 0.75rem 1rem;
+  font: inherit; color: var(--ink); background: var(--paper);
+  border: 1.5px solid var(--ink-2); border-radius: 12px;
+  transition: border-color var(--dur-state) var(--ease-out-expo);
+}
+.contact-form textarea { min-height: 8.5rem; resize: vertical; }
+.contact-form :is(input:not([type="radio"]), select, textarea):hover { border-color: var(--ink); }
+.contact-form :is(input:not([type="radio"]), select, textarea):focus-visible { border-color: var(--ink); outline-offset: 2px; border-radius: 12px; }
+.select { position: relative; }
+.select select { appearance: none; padding-right: 3rem; cursor: pointer; }
+.select::after {
+  content: ""; position: absolute; right: 1.2rem; top: 50%; width: 0.55rem; height: 0.55rem; margin-top: -0.4rem;
+  border: solid var(--ink); border-width: 0 2px 2px 0; transform: rotate(45deg); pointer-events: none;
+}
+
+/* Hiding the set that doesn't match. Without JS: :has(). With JS: [hidden], so the outgoing set can animate. */
+.contact-form:not(.is-enhanced):has(input[value="staff"]:checked) .fields-client,
+.contact-form:not(.is-enhanced):has(input[value="client"]:checked) .fields-staff,
+.contact-form .mode-set[hidden] { display: none; }
+.mode-set { transition: opacity 0.24s var(--ease-out-expo), transform 0.24s var(--ease-out-expo); }
+.mode-set.is-leaving { opacity: 0; transform: translateY(-6px); transition-duration: 0.18s; }
+.mode-set.is-entering { opacity: 0; transform: translateY(6px); transition: none; }
+
+.form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 0.5rem; }
+.form-submit { min-width: 10rem; border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.preview-note { margin: 0; font-size: 0.9375rem; color: var(--ink-2); }
+
+/* Preview result: replaces the form until "Start again" */
+.form-done:empty { display: none; }
+.form-done { position: relative; overflow: hidden; padding: clamp(1.5rem, 5vw, 2.5rem); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.form-done p { position: relative; margin: 0 0 1.5rem; font-family: var(--font-head); font-size: clamp(1.375rem, 4.5vw, 1.75rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.25; }
+.form-done .btn { position: relative; background: none; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; }
+.form-done:focus-visible { outline-offset: 4px; border-radius: var(--radius-lg); }
+.form-done::before { content: ""; position: absolute; right: -3rem; top: -3rem; width: 11rem; height: 11rem; border-radius: 50%; border: 1.5px solid var(--link); opacity: 0; pointer-events: none; }
+
+
+/* Motion. Every keyframe and scroll-driven effect lives in the no-preference blocks below, so
+   reduced motion never sees any of it (tests/test_motion.py). Transform and opacity only. */
+.js-reveal [data-reveal] .rv { opacity: 0; transform: translateY(24px); transition: opacity var(--dur-enter) var(--ease-out-expo), transform var(--dur-enter) var(--ease-out-expo); }
+.js-reveal [data-reveal] .rv.is-visible { opacity: 1; transform: none; }
+.js-reveal .facts li.rv::before { transform: scaleX(0); transition: transform 900ms var(--ease-out-expo) 120ms; }
+.js-reveal .facts li.rv.is-visible::before { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal], .js-reveal [data-reveal] .rv { opacity: 1; transform: none; }
+  .js-reveal .facts li.rv::before { transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero entry, once on load: a staggered rise (Atelier's choreography, with ease-out-expo in
+     place of its spring overshoot). The window only scales: fading it would drop the scrim. */
+  .hero .eyebrow { animation: rise var(--dur-enter) var(--ease-out-expo) both; }
+  .hero h1 .line > span { animation: line-up 900ms var(--ease-out-expo) 60ms both; }
+  .hero h1 .line + .line > span { animation-delay: 150ms; }
+  .hero .lead { animation: rise var(--dur-enter) var(--ease-out-expo) 260ms both; }
+  .hero-actions { animation: rise var(--dur-enter) var(--ease-out-expo) 360ms both; }
+  .hero .bookend-window { animation: window-open 1100ms var(--ease-out-expo) both; }
+  .hero .bookend-window .ring-1 { animation: ring-in 1000ms var(--ease-out-expo) 240ms both; }
+  .hero .bookend-window .ring-2 { animation: ring-in 1000ms var(--ease-out-expo) 340ms both; }
+  .hero .bookend-wordmark { animation: mark-rise 1200ms var(--ease-out-expo) 120ms both; }
+  .soffit { transition: opacity 900ms var(--ease-out-quart); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes line-up { from { transform: translateY(105%); } }
+  @keyframes window-open { from { transform: scale(0.9); } }
+  @keyframes ring-in { from { opacity: 0; transform: scale(0.92); } }
+  @keyframes mark-rise { from { opacity: 0; transform: translate(-50%, 45%); } }
+
+  /* The success moment: the message rises, one ring breathes out behind it, once */
+  .form-done:not(:empty) { animation: rise 400ms var(--ease-out-expo) both; }
+  .form-done:not(:empty)::before { animation: ring-out 380ms var(--ease-out-quart) 60ms both; }
+  @keyframes ring-out { from { opacity: 0.5; transform: scale(0.8); } to { opacity: 0; transform: scale(1.3); } }
+
+  /* The contact heading follows the switch with a short crossfade */
+  .is-swapping { animation: swap-in 200ms var(--ease-out-quart) both; }
+  @keyframes swap-in { from { opacity: 0; } }
+
+  /* Slow parallax on the hero texture as you leave it: the ground drifts at a fraction of the
+     scroll. Static where scroll timelines are unsupported (Firefox, iOS before 26). */
+  @supports (animation-timeline: scroll()) {
+    .hero .bookend-ground { animation: ground-drift linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+    @keyframes ground-drift { to { transform: translateY(12%); } }
+  }
+
+  /* Careers mesh drifts as the band passes; carousel cards settle in as they slide into view */
+  @supports (animation-timeline: view()) {
+    .band-careers::before { animation: band-drift linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+    @keyframes band-drift { from { transform: translateY(-5%); } to { transform: translateY(5%); } }
+    .carousel-track > li { animation: card-settle linear both; animation-timeline: view(inline); animation-range: entry 0% cover 35%; }
+    @keyframes card-settle { from { opacity: 0.55; transform: scale(0.94); } }
+  }
+}
+
+/* Print: everything visible, no decorative layers, ink on paper */
+@media print {
+  .js-reveal [data-reveal], .js-reveal [data-reveal] .rv { opacity: 1; transform: none; }
+  .site-header { position: static; }
+  .site-header, .band, .bookend { background: none; color: #000; }
+  .band a:not(.btn), .site-header a { color: #000; }
+  .band::before, .band::after, .band-dots, .bookend-ground, .soffit, .bookend-grain, .bookend-wordmark, .bookend-window, .skip { display: none; }
+  .site-footer { min-height: 0; padding-block: 2rem; }
+  .site-footer a:not(.btn) { color: #000; }
+  .hero { min-height: 0; padding-block: 2rem; }
+  .bookend .btn-ghost { border-color: currentColor; }
+}

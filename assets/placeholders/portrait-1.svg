@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
+  <defs>
+    <radialGradient id="a" cx="0.2" cy="0.15" r="0.9"><stop offset="0" stop-color="#2B6FD4"/><stop offset="1" stop-color="#0A3A9E" stop-opacity="0"/></radialGradient>
+    <radialGradient id="b" cx="0.85" cy="0.9" r="0.6"><stop offset="0" stop-color="#8CC63F" stop-opacity="0.85"/><stop offset="1" stop-color="#8CC63F" stop-opacity="0"/></radialGradient>
+    <radialGradient id="c" cx="0.9" cy="0.1" r="0.55"><stop offset="0" stop-color="#0593C6" stop-opacity="0.9"/><stop offset="1" stop-color="#0593C6" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="30" fill="#061B4A"/>
+  <rect width="120" height="120" rx="30" fill="url(#a)"/>
+  <rect width="120" height="120" rx="30" fill="url(#c)"/>
+  <rect width="120" height="120" rx="30" fill="url(#b)"/>
+  <g fill="none" stroke="#F9FCFF">
+    <circle cx="60" cy="60" r="22" stroke-width="3" stroke-opacity="0.9"/>
+    <circle cx="60" cy="60" r="34" stroke-width="1.5" stroke-opacity="0.45"/>
+    <circle cx="60" cy="60" r="46" stroke-width="1" stroke-opacity="0.2"/>
+  </g>
+</svg>
